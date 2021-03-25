@@ -29,6 +29,7 @@ function InitialisePartie()
     partie.score["B"] = 2
     partie.caseX = -1
     partie.caseY = -1
+    partie.joueurDoitPasser = false
 
     return partie
 end
@@ -55,14 +56,16 @@ function DessineGrille()
     end
 
     -- affiche les valeurs des coups potentiels
-    if BAfficheValeurCoups then
-        for x=0,7 do
-            for y=0,7 do
-                if MaPartie.plateau[x..","..y]==nil then
-                    local valeurCoup = EvalueCoup(x, y, Autre())
-                    if valeurCoup~=0 then
+    local joueurDoitPasser = true
+    for x=0,7 do
+        for y=0,7 do
+            if MaPartie.plateau[x..","..y]==nil then
+                local valeurCoup = EvalueCoup(x, y, Autre())
+                if valeurCoup~=0 then
+                    if BAfficheValeurCoups then
                         love.graphics.print(valeurCoup,X0+x*DX+DX/2-4,Y0+y*DY+DY/2-6)
                     end
+                    joueurDoitPasser = false
                 end
             end
         end
@@ -80,6 +83,17 @@ function DessineGrille()
             love.graphics.line(X0+MaPartie.caseX*DX,Y0+(MaPartie.caseY+1)*DY,X0+(MaPartie.caseX+1)*DX,Y0+MaPartie.caseY*DY)
         end
     end
+
+    -- si aucun coup n'est possible, le joueur passe
+    if joueurDoitPasser then
+        -- si le joueur précédent a passé, la partie s'arrête
+        if MaPartie.joueurDoitPasser then
+            MaPartie.joueurEnCours = ""
+        else
+            MaPartie.joueurEnCours = Autre()
+        end
+    end
+    MaPartie.joueurDoitPasser = joueurDoitPasser
 end
 
 -- Affiche les poins déjà joués
@@ -223,5 +237,46 @@ function DessinePartie()
     DessineGrille()
     DessinePions()
     DessineInfos()
+
+    if Etat=="soloB" and Autre()=="B" then
+        Joue()
+    end
+    if Etat=="soloN" and Autre()=="N" then
+        Joue()
+    end
 end
 
+-- Jeu de l'ordinateur
+function Joue()
+    -- Stratégie de base : on cherche tous les coups possibles
+    -- on conserve ceux qui ont le plus haut score
+    -- on joue l'un d'entre eux au hasard
+    local scoreMax = 0
+    local tabCoupsPossibleX = {}
+    local tabCoupsPossibleY = {}
+
+    for x=0,7 do
+        for y=0,7 do
+            local valCoup = EvalueCoup(x, y, Autre())
+            if valCoup>=scoreMax then
+                if valCoup>scoreMax then
+                    -- Meilleur coup que tous ceux trouvés : remplace la liste en cours
+                    tabCoupsPossibleX = {}
+                    tabCoupsPossibleY = {}
+                end
+                -- Equivalent à ceux trouvés : ajouté à la liste en cours
+                tabCoupsPossibleX[#tabCoupsPossibleX+1] = x
+                tabCoupsPossibleY[#tabCoupsPossibleY+1] = y
+            end
+        end
+    end
+
+    if #tabCoupsPossibleX>0 then
+        -- Choisis un coup à joueur
+        local coup = love.math.random(#tabCoupsPossibleX)
+        MaPartie.caseX = tabCoupsPossibleX[coup]
+        MaPartie.caseY = tabCoupsPossibleY[coup]
+
+        OnMouseReleased( 0, 0, 0, true, nil )
+    end
+end

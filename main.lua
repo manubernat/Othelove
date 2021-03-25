@@ -35,7 +35,11 @@ end
 -- Callback Löve de relâché du clic gauche
 function love.mousereleased( x, y, button, istouch, presses )
     if Etat=="menu" then
-        if y>400 and y<400+BtnSolo:getHeight() then
+        if y>300 and y<300+BtnSoloB:getHeight() then
+            Etat = "soloB"
+        end
+        if y>400 and y<400+BtnSoloN:getHeight() then
+            Etat = "soloN"
         end
         if y>500 and y<500+BtnDuo:getHeight() then
             Etat = "duo_local"
@@ -63,9 +67,12 @@ function DessineMenu()
     love.graphics.printf("Un clone de Reversi en Löve/Lua",MargeDessin,150,LargeurEcran-2*MargeDessin,"center")
     love.graphics.printf("version 1.0",MargeDessin,HauteurEcran-MargeDessin,LargeurEcran-2*MargeDessin,"right")
 
-    BtnSolo = love.graphics.newText( MoyennePolice, "" )
-    BtnSolo:addf("Partie en solo",LargeurEcran-2*MargeDessin,"center")
-    love.graphics.draw(BtnSolo,MargeDessin,400)
+    BtnSoloB = love.graphics.newText( MoyennePolice, "" )
+    BtnSoloB:addf("Partie en solo (jouer blancs)",LargeurEcran-2*MargeDessin,"center")
+    love.graphics.draw(BtnSoloB,MargeDessin,300)
+    BtnSoloN = love.graphics.newText( MoyennePolice, "" )
+    BtnSoloN:addf("Partie en solo (jouer noirs)",LargeurEcran-2*MargeDessin,"center")
+    love.graphics.draw(BtnSoloN,MargeDessin,400)
 
     BtnDuo = love.graphics.newText( MoyennePolice, "" )
     BtnDuo:addf("Deux joueurs (en local)",LargeurEcran-2*MargeDessin,"center")
